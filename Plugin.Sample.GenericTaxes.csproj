@@ -12,6 +12,23 @@
     <AssemblyName>Plugin.Sample.GenericTaxes</AssemblyName>
     <RootNamespace>Plugin.Sample.GenericTaxes</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Commands\**" />
+    <Compile Remove="Components\**" />
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="Entities\**" />
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Commands\**" />
+    <EmbeddedResource Remove="Components\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Entities\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Commands\**" />
+    <None Remove="Components\**" />
+    <None Remove="Controllers\**" />
+    <None Remove="Entities\**" />
+    <None Remove="Models\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Sitecore.Commerce.Core">
@@ -43,11 +60,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\" />
-    <Folder Include="Components\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Entities\" />
-    <Folder Include="Models\" />
     <Folder Include="Pipelines\Arguments\" />
   </ItemGroup>
 </Project>

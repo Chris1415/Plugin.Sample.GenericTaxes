@@ -16,9 +16,23 @@ using System.Threading.Tasks;
 
 namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
 {
+    /// <summary>
+    /// CalculateCartLinesGenericTaxBlock
+    /// </summary>
     [PipelineDisplayName("GenericTaxes.Block.CalculateCartLinesGenericTaxBlock")]
     public class CalculateCartLinesGenericTaxBlock : PipelineBlock<Cart, Cart, CommercePipelineExecutionContext>
     {
+        /// <summary>
+        /// En Culture
+        /// </summary>
+        private readonly CultureInfo CultureEn = CultureInfo.CreateSpecificCulture("en-GB");
+
+        /// <summary>
+        /// Run
+        /// </summary>
+        /// <param name="arg">arg</param>
+        /// <param name="context"><context/param>
+        /// <returns></returns>
         public override Task<Cart> Run(Cart arg, CommercePipelineExecutionContext context)
         {
             Condition.Requires(arg).IsNotNull(string.Format("{0}: The cart can not be null", this.Name));
@@ -46,23 +60,23 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
             }
 
             string currencyCode = context.CommerceContext.CurrentCurrency();
-            GenericTaxPolicy policy1 = context.GetPolicy<GenericTaxPolicy>();
-            GlobalPricingPolicy policy2 = context.GetPolicy<GlobalPricingPolicy>();
+            GenericTaxPolicy taxPolicy = context.GetPolicy<GenericTaxPolicy>();
+            GlobalPricingPolicy pricePolicy = context.GetPolicy<GlobalPricingPolicy>();
 
-            context.Logger.LogDebug(string.Format("{0} - Policy:{1}", this.Name, policy1.TaxCalculationEnabled));
+            context.Logger.LogDebug(string.Format("{0} - Policy:{1}", this.Name, taxPolicy.TaxCalculationEnabled));
 
-            Decimal defaultItemTaxRate = policy1.DefaultItemTaxRate;
+            Decimal defaultItemTaxRate = taxPolicy.DefaultItemTaxRate;
 
             context.Logger.LogDebug(string.Format("{0} - Item Tax Rate:{1}", this.Name, defaultItemTaxRate));
 
             foreach (CartLineComponent cartLineComponent in list)
             {
-                if (policy1.TaxExemptTagsEnabled && cartLineComponent.HasComponent<CartProductComponent>())
+                if (taxPolicy.TaxExemptTagsEnabled && cartLineComponent.HasComponent<CartProductComponent>())
                 {
                     IList<Tag> tags = cartLineComponent.GetComponent<CartProductComponent>().Tags;
                     Func<Tag, string> func = (t => t.Name);
                     Func<Tag, string> selector = null;
-                    if (tags.Select(selector).Contains(policy1.TaxExemptTag, StringComparer.InvariantCultureIgnoreCase))
+                    if (tags.Select(selector).Contains(taxPolicy.TaxExemptTag, StringComparer.InvariantCultureIgnoreCase))
                     {
                         context.Logger.LogDebug(string.Format("{0} - Skipping Tax Calculation for product {1} due to exempt tag", (object)this.Name, (object)cartLineComponent.ItemId), Array.Empty<object>());
                         continue;
@@ -81,33 +95,35 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
                 var composerView = sellableItem.GetComposerView(composerTemplateViewsComponent.Key);
 
                 // Extract the needed tax value from custom view property
-                string taxValue = composerView.Properties.FirstOrDefault(element => element.Name.Equals(policy1.TaxFieldName)).Value;
+                string taxValue = composerView.Properties.FirstOrDefault(element => element.Name.Equals(taxPolicy.TaxFieldName)).Value;
 
                 // Cast the string with correct culture to decimal
-                if (!decimal.TryParse(taxValue, NumberStyles.Any, CultureInfo.CreateSpecificCulture("en-GB"), out decimal taxValueAsDecimal))
+                if (!decimal.TryParse(taxValue, NumberStyles.Any, this.CultureEn, out decimal taxValueAsDecimal)
+                    || !taxPolicy.Whitelist.Contains(taxValueAsDecimal))
                 {
-                    taxValueAsDecimal = defaultItemTaxRate;
+                    context.Logger.LogDebug(string.Format("{0} - Tax Rate: {1} is invalid or not whitelisted", this.Name, taxValue));
+                    if (taxPolicy.UseDefaultTaxRateIfNoneIsSet)
+                    {
+                        taxValueAsDecimal = defaultItemTaxRate;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
 
-                // Check if the result decimal is whitelisted
-                if (!policy1.Whitelist.Contains(taxValueAsDecimal))
+                Money money = new Money(currencyCode, (cartLineComponent.Totals.SubTotal.Amount + num) * taxValueAsDecimal);
+                if (pricePolicy.ShouldRoundPriceCalc)
                 {
-                    context.Logger.LogDebug(string.Format("{0} - Tax Rate: {1} is not whitelisted", this.Name, taxValue));
-                    taxValueAsDecimal = defaultItemTaxRate;
-                }
-                //**
-
-                Money money = new Money(currencyCode, (cartLineComponent.Totals.SubTotal.Amount + num) * defaultItemTaxRate);
-                if (policy2.ShouldRoundPriceCalc)
-                {
-                    money.Amount = Decimal.Round(money.Amount, policy2.RoundDigits, policy2.MidPointRoundUp ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven);
+                    money.Amount = Decimal.Round(money.Amount, pricePolicy.RoundDigits, pricePolicy.MidPointRoundUp ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven);
                 }
 
                 IList<AwardedAdjustment> adjustments = cartLineComponent.Adjustments;
+                string taxName = $"TaxFee-{(taxValueAsDecimal * 100)}%";
                 CartLineLevelAwardedAdjustment awardedAdjustment = new CartLineLevelAwardedAdjustment
                 {
-                    Name = "TaxFee",
-                    DisplayName = "TaxFee",
+                    Name = taxName,
+                    DisplayName = taxName,
                     Adjustment = money,
                     AdjustmentType = context.GetPolicy<KnownCartAdjustmentTypesPolicy>().Tax,
                     AwardingBlock = this.Name,
@@ -116,6 +132,7 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
                 };
                 adjustments.Add(awardedAdjustment);
             }
+
             return Task.FromResult(arg);
         }
     }
