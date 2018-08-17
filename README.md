@@ -3,6 +3,8 @@ Sitecore XC Engine Generic Taxes Plugin Implementation
 
 With this Plugin you are able not only to apply one single tax rate, but as many tax rates as you want.
 
+For detailed information just read https://hachweb.wordpress.com/2018/08/17/sitecore-xc-9-0-2-walkthrough-of-extending-the-standard-tax-plugin-to-fulfill-multiple-tax-rates/
+
 # XP Side
 Just add a new Field with Composer, which holds the tax rates for the specific sellable items.
 In this example the field is called "Taxes" and holds german tax rates 0.07 and 0.19 as values for 7% and 19% tax rates.
