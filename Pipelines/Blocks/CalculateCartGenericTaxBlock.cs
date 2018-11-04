@@ -35,7 +35,7 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
         /// <returns></returns>
         public override Task<Cart> Run(Cart arg, CommercePipelineExecutionContext context)
         {
-            if (ConditionsValid(arg, context))
+            if (!ConditionsValid(arg, context))
             {
                 Task.FromResult(arg);
             }
