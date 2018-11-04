@@ -123,7 +123,7 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
             foreach (var sellableItem in sellableItems)
             {
                 var composerTemplateViewsComponent = sellableItem.GetComponent<ComposerTemplateViewsComponent>().Views
-                    .FirstOrDefault();
+                    .FirstOrDefault(element => element.Value.Equals(GenericTaxesConstants.ComposerViewValue));
                 var composerView = sellableItem.GetComposerView(composerTemplateViewsComponent.Key);
 
                 // Extract the needed tax value from custom view property

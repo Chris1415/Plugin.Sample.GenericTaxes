@@ -17,12 +17,7 @@ namespace Plugin.Sample.GenericTaxes.Policies
             this.TaxFieldName = "Taxes";
             this.Whitelist = new List<Decimal>();
             this.UseDefaultTaxRateIfNoneIsSet = true;
-        } 
-
-        /// <summary>
-        /// Whitelist of allowed tax rates
-        /// </summary>
-        public IList<Decimal> Whitelist { get; set; }
+        }
 
         /// <summary>
         /// TaxFieldName on the sellable Item
@@ -33,5 +28,10 @@ namespace Plugin.Sample.GenericTaxes.Policies
         /// Flag to determine if the default Tax rate should be applied if no one is present
         /// </summary>
         public bool UseDefaultTaxRateIfNoneIsSet { get; set; }
+
+        /// <summary>
+        /// Whitelist of allowed tax rates
+        /// </summary>
+        public IList<Decimal> Whitelist { get; set; }
     }
 }

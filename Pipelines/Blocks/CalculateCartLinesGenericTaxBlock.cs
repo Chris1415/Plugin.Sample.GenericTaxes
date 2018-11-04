@@ -91,7 +91,7 @@ namespace Plugin.Sample.GenericTaxes.Pipelines.Blocks
                 //** Custom Implementation
                 // Retrieve the sellable item from commerce context
                 var sellableItem = context.CommerceContext.GetEntity<SellableItem>();
-                var composerTemplateViewsComponent = sellableItem.GetComponent<ComposerTemplateViewsComponent>().Views.FirstOrDefault();
+                var composerTemplateViewsComponent = sellableItem.GetComponent<ComposerTemplateViewsComponent>().Views.FirstOrDefault(element => element.Value.Equals(GenericTaxesConstants.ComposerViewValue));
                 var composerView = sellableItem.GetComposerView(composerTemplateViewsComponent.Key);
 
                 // Extract the needed tax value from custom view property

@@ -13,19 +13,13 @@
     <RootNamespace>Plugin.Sample.GenericTaxes</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Commands\**" />
     <Compile Remove="Components\**" />
-    <Compile Remove="Controllers\**" />
     <Compile Remove="Entities\**" />
     <Compile Remove="Models\**" />
-    <EmbeddedResource Remove="Commands\**" />
     <EmbeddedResource Remove="Components\**" />
-    <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Entities\**" />
     <EmbeddedResource Remove="Models\**" />
-    <None Remove="Commands\**" />
     <None Remove="Components\**" />
-    <None Remove="Controllers\**" />
     <None Remove="Entities\**" />
     <None Remove="Models\**" />
   </ItemGroup>
@@ -57,9 +51,5 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="System.Transactions" />
     <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Pipelines\Arguments\" />
   </ItemGroup>
 </Project>
